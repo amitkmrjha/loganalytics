@@ -1,0 +1,9 @@
+@(form: Form[controllers.LogFormData])(implicit request: MessagesRequestHeader)
+
+@main("Welcome to Play") {
+  @helper.form(action = routes.LogController.uploadLog, Symbol("enctype") -> "multipart/form-data") {
+    @helper.inputFile(form("name"))
+    @helper.CSRF.formField
+    <input type="submit" id="uploadLog" value="upload Log file"/>
+  }
+}
