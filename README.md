@@ -11,7 +11,14 @@ sbt compile
 sbt run
 ```
 
-And then go to <http://localhost:9000/log> choose the log file to upload
+
+## Test the Rest API
+
+upload a log file to  http://localhost:9000/upload/log
+
+## Test through browser
+
+ go to <http://localhost:9000/log> choose the log file to upload
 
 
 ## Controllers
