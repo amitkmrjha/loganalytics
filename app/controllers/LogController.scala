@@ -7,14 +7,17 @@ import javax.inject._
 import akka.stream.{IOResult, Materializer}
 import akka.stream.scaladsl._
 import akka.util.ByteString
+import models.{LogInfo, LogResult}
 import play.api._
 import play.api.data.Form
 import play.api.data.Forms._
+import play.api.libs.json.Json
 import play.api.libs.streams._
 import play.api.mvc.MultipartFormData.FilePart
 import play.api.mvc._
 import play.core.parsers.Multipart.FileInfo
 
+import scala.language.postfixOps
 import scala.concurrent.{ExecutionContext, Future}
 
 case class LogFormData(name: String)
@@ -65,13 +68,37 @@ class LogController @Inject() (cc:MessagesControllerComponents)
     * A generic operation on the temporary file that deletes the temp file after completion.
     */
   private def parseOnTempFile(file: File):Future[Seq[String]] = {
-    //Source[String, Future[IOResult]]
-
     FileIO.fromPath(file.toPath)
       .via(Framing.delimiter(ByteString(System.lineSeparator), maximumFrameLength = 512, allowTruncation = true))
       .map(_.utf8String)
+      .filter(line => line.contains(s"ENTER") || line.contains(s"EXIT"))
       .runWith(Sink.seq[String])
   }
+
+
+  private def toLogResult(lines:Seq[String]):LogResult = LogResult(lines.map {toInfo} flatten)
+
+  private def toInfo(line:String):Option[LogInfo] = {
+    val info = line.split("]|:")
+   if(info.size == 4 ){
+      val ln_M = info(3).split("\\s+")
+      val lineNo = ln_M(0).trim
+      val method = ln_M(1).trim
+      lineNo.toIntOption.map{ l =>
+        LogInfo(info(1).trim,info(2).trim,l,getMethodName(method))
+      }
+    }else
+     None
+  }
+
+  private def getMethodName(name:String):String = name.trim match {
+    case x if x == null || x.isEmpty => "anonymous"
+    case x if x == "0" => "anonymous"
+    case x if  x(0).equals("_") /*|| Character.isUnicodeIdentifierStart(x(0)) */!= false => "anonymous"
+    case _ => name
+
+  }
+
 
 
   /**
@@ -98,7 +125,8 @@ class LogController @Inject() (cc:MessagesControllerComponents)
     fileOption match {
       case Some(f) => parseOnTempFile(f).map{str =>
         val data = operateOnTempFile(f)
-        Ok(s"${str.mkString("\n")}")
+        val lr = toLogResult(str)
+        Ok((Json.toJson(lr)))
       }
       case None => Future.successful(Ok(s"No file to process"))
     }
