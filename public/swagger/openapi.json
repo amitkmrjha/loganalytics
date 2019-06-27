@@ -1,0 +1,95 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LogAnalytics",
+    "description": "This is the REST API documentation for Log Analytics.",
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Learn more about Log Analytics",
+    "url": "https://github.com/amitkmrjha/loganalytics"
+  },
+  "tags": [
+    {
+      "name": "LogUpload",
+      "description": "Log Upload",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "https://github.com/amitkmrjha/loganalytics"
+      }
+    }
+  ],
+  "paths": {
+    "/upload/log": {
+      "post": {
+        "tags": [
+          "LogUpload"
+        ],
+        "summary": "upload log file for Analytics",
+        "description": "upload log file for Analytics.",
+        "operationId": "logUpload",
+        "requestBody": {
+          "description": "log file to upload",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "LogResult",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LogResult": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LogInfo"
+            }
+          }
+        }
+      },
+      "LogInfo": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "line_number": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
