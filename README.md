@@ -23,4 +23,4 @@ And then go to <http://localhost:9000/log> choose the log file to upload
 
 ## Swagger pec 3.0
 
-/public/swagger/openapi.spec
+/public/swagger/openapi.json
